@@ -30,7 +30,7 @@ class listViewViewModel: ObservableObject {
             .whereField("date", isGreaterThanOrEqualTo: startOfMonth.timeIntervalSince1970)
             .whereField("date", isLessThan: endOfMonth.timeIntervalSince1970)
             .getDocuments { snapshot, error in
-                if let error = error {
+                if error != nil {
                     //print("Error fetching items: \(error.localizedDescription)")
                     return
                 }
@@ -52,7 +52,7 @@ class listViewViewModel: ObservableObject {
                 .collection("todos")
                 .document(id)
                 .delete() { [weak self] error in
-                    if let error = error {
+                    if error != nil {
                        // print("Error deleting item: \(error)")
                     } else {
                         self?.fetchItems(for: Date()) // Refresh items after deletion
