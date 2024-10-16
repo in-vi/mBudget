@@ -11,19 +11,26 @@ import Foundation
 class todoListViewViewModel : ObservableObject{
     init() {}
     
-    func toggleIsDone(item:TodoListItem){
-        var itemCopy = item
-        itemCopy.setDone(!item.isDone)
-        
-        guard let uid = Auth.auth().currentUser?.uid else {
-            return
+    func toggleIsDone(item: TodoListItem, completion: @escaping (TodoListItem) -> Void) {
+            var updatedItem = item
+            updatedItem.isDone.toggle()  // Toggle the done status
+            
+            let db = Firestore.firestore()
+            let userId = Auth.auth().currentUser?.uid ?? "unknownUser"
+            
+            db.collection("users")
+                .document(userId)
+                .collection("todos")
+                .document(item.id)
+                .updateData(["isDone": updatedItem.isDone]) { error in
+                    if let error = error {
+                        print("Error updating isDone: \(error)")
+                        return
+                    }
+                    
+                    // Call completion with updated item so that UI can refresh
+                    completion(updatedItem)
+                }
         }
-        
-        let db = Firestore.firestore()
-        db.collection("users")
-            .document(uid)
-            .collection("todos")
-            .document(itemCopy.id)
-            .setData(itemCopy.asDictionary())
-    }
+    
 }

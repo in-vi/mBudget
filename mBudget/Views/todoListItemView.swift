@@ -9,11 +9,23 @@ import SwiftUI
 
 struct todoListItemView: View {
     @StateObject var viewModel = todoListViewViewModel()
-    let item: TodoListItem
+    @State var item: TodoListItem  // Make item mutable to update UI
     
     var body: some View {
-        HStack{
-            VStack(alignment: .leading){
+        HStack {
+            Button {
+                // Toggle the done status and update Firestore
+                viewModel.toggleIsDone(item: item) { updatedItem in
+                    self.item = updatedItem  // Update the UI after toggling
+                }
+            } label: {
+                Image(systemName: item.isDone ? "checkmark.circle.fill" : "circle")
+                    .foregroundColor(Color.blue)
+            }
+            VStack(alignment: .leading) {
+                
+                
+                
                 Text(item.title)
                     .bold()
                     .font(.body)
@@ -22,14 +34,9 @@ struct todoListItemView: View {
                     .foregroundColor(Color(.secondaryLabel))
             }
             
-            Spacer()
+            //Spacer()
             
-            Button{
-                viewModel.toggleIsDone(item:item)
-            } label: {
-                Image(systemName: item.isDone ? "checkmark.circle.fill" : "circle")
-                    .foregroundColor(Color.blue)
-            }
+            
         }
     }
 }

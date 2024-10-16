@@ -9,24 +9,24 @@ import Foundation
 import FirebaseAuth
 import FirebaseFirestore
 
-class newItemViewViewModel : ObservableObject{
+class newItemViewViewModel: ObservableObject {
     @Published var title = ""
     @Published var date = Date()
     @Published var amount = ""
     @Published var showAlert = false
-    
+
+    var onItemSaved: (() -> Void)?
+
     init() {}
-    
-    func save(){
-        // try saving
-        guard canSave else{
+
+    func save() {
+        guard canSave else {
             return
         }
-        // get current userid
-        guard let uId = Auth.auth().currentUser?.uid else{
+        guard let uId = Auth.auth().currentUser?.uid else {
             return
         }
-        // create model
+
         let newId = UUID().uuidString
         let newItem = TodoListItem(
             id: newId,
@@ -34,23 +34,23 @@ class newItemViewViewModel : ObservableObject{
             date: date.timeIntervalSince1970,
             createdDate: Date().timeIntervalSince1970,
             isDone: false,
-            amount : amount)
-        
-        // save model
-        
+            amount: amount
+        )
+
         let db = Firestore.firestore()
         db.collection("users")
             .document(uId)
             .collection("todos")
             .document(newId)
-            .setData(newItem.asDictionary())
+            .setData(newItem.asDictionary()) { error in
+                if error == nil {
+                    self.onItemSaved?() // Notify that an item has been saved
+                }
+            }
     }
-    
-    var canSave: Bool{
-        
-        guard !title.trimmingCharacters(in: .whitespaces).isEmpty//,
-              //!amount.trimmingCharacters(in: .whitespaces).isEmpty
-        else{
+
+    var canSave: Bool {
+        guard !title.trimmingCharacters(in: .whitespaces).isEmpty else {
             return false
         }
         return true
