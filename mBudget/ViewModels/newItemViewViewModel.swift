@@ -9,7 +9,7 @@ import Foundation
 import FirebaseAuth
 import FirebaseFirestore
 
-class newItemViewViewModel: ObservableObject {
+class NewItemViewViewModel: ObservableObject {
     @Published var title = ""
     @Published var date = Date()
     @Published var amount = ""

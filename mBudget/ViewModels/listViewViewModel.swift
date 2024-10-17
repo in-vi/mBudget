@@ -10,7 +10,7 @@ import SwiftUI
 
 // ...
 
-class listViewViewModel: ObservableObject {
+class ListViewViewModel: ObservableObject {
     @Published var showingNewItem = false
     @Published var items: [TodoListItem] = []
     

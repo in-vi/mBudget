@@ -7,8 +7,8 @@
 
 import SwiftUI
 
-struct itemView: View {
-    @StateObject var viewModel = newItemViewViewModel()
+struct ItemView: View {
+    @StateObject var viewModel = NewItemViewViewModel()
     @Binding var newItemPresented: Bool
     var onItemSaved: (() -> Void)?
 

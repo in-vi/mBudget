@@ -8,15 +8,15 @@
 import FirebaseFirestore
 import SwiftUI
 
-struct listView: View {
-    @StateObject var viewModel: listViewViewModel
+struct ListView: View {
+    @StateObject var viewModel: ListViewViewModel
     @FirestoreQuery var items: [TodoListItem]
     @State private var selectedMonth: Date = Date()
     @State private var isActualsViewPresented: Bool = false // State variable for ActualsView
 
     init(userId: String) {
         self._items = FirestoreQuery(collectionPath: "users/\(userId)/todos")
-        self._viewModel = StateObject(wrappedValue: listViewViewModel(userId: userId))
+        self._viewModel = StateObject(wrappedValue: ListViewViewModel(userId: userId))
     }
 
     private var formattedMonth: String {
@@ -45,7 +45,7 @@ struct listView: View {
                 addItemButton
             }
             .sheet(isPresented: $viewModel.showingNewItem) {
-                itemView(newItemPresented: $viewModel.showingNewItem) {
+                ItemView(newItemPresented: $viewModel.showingNewItem) {
                     viewModel.fetchItems(for: selectedMonth)
                 }
             }
@@ -100,5 +100,5 @@ struct listView: View {
 }
 
 #Preview {
-    listView(userId: "2sWOdN7nlbasXo8wt9jBUT6xZp82")
+    ListView(userId: "2sWOdN7nlbasXo8wt9jBUT6xZp82")
 }

@@ -24,7 +24,7 @@ struct ContentView: View {
     @ViewBuilder
     var accountView: some View{
         TabView {
-            listView(userId: viewModel.currentUserId)
+            ListView(userId: viewModel.currentUserId)
                 .tabItem{
                     Label("Home",systemImage: "house")
                 }
