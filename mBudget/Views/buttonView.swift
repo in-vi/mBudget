@@ -25,6 +25,7 @@ struct buttonView: View {
                     .foregroundColor(Color.white)
                     .bold()
             }
+            .frame(width: 150.0, height: 40.0)
         }
     }
 }

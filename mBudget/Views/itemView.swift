@@ -10,36 +10,76 @@ import SwiftUI
 struct itemView: View {
     @StateObject var viewModel = newItemViewViewModel()
     @Binding var newItemPresented: Bool
-    var onItemSaved: (() -> Void)? // Add this property
+    var onItemSaved: (() -> Void)?
+
+    @State private var selectedCategory: Category?
+
+    var categories: [Category] = [
+        Category(id: UUID().uuidString, name: "Groceries", iconName: "cart"),
+        Category(id: UUID().uuidString, name: "Utilities", iconName: "bolt"),
+        Category(id: UUID().uuidString, name: "Food", iconName: "fork.knife")
+    ]
 
     var body: some View {
         VStack {
-            Text("new entry")
+            Text("New Entry")
                 .font(.system(size: 32))
                 .bold()
-                .padding(.top, 100)
-            Form {
-                TextField("add item", text: $viewModel.title)
-                    .textFieldStyle(DefaultTextFieldStyle())
+                .padding(.top, 50)
 
-                DatePicker("add date", selection: $viewModel.date)
-                    .datePickerStyle(GraphicalDatePickerStyle())
+            if selectedCategory == nil {
+                CategoryView(categories: categories, selectedCategory: $selectedCategory)
 
-                buttonView(name: "add entry", background: .blue) {
-                    if viewModel.canSave {
-                        viewModel.save()
-                        newItemPresented = false
-                        onItemSaved?() // Call this to notify the listView
-                    } else {
-                        viewModel.showAlert = true
+                Text("Please select a category to add items.")
+                    .foregroundColor(.gray)
+                    .padding()
+            } else {
+                Text("Selected Category: \(selectedCategory?.name ?? "")")
+                    .font(.headline)
+                    .padding(.bottom, 10)
+
+                Form {
+                    TextField("Add item", text: $viewModel.title)
+                        .textFieldStyle(DefaultTextFieldStyle())
+                    TextField("Enter amount", text: $viewModel.amount)
+                        .keyboardType(.decimalPad)
+
+                    DatePicker("Add date", selection: $viewModel.date)
+                        .datePickerStyle(CompactDatePickerStyle())
+
+                    buttonView(name: "Add Entry", background: .blue) {
+                        if viewModel.canSave {
+                            guard let selectedCategory = selectedCategory else {
+                                viewModel.showAlert = true
+                                return
+                            }
+                            // Create the new item
+                            let newItem = TodoListItem(
+                                id: UUID().uuidString,
+                                title: viewModel.title,
+                                date: viewModel.date.timeIntervalSince1970,
+                                createdDate: Date().timeIntervalSince1970,
+                                isDone: false,
+                                amount: viewModel.amount,
+                                category: selectedCategory  // Assign the selected category
+                            )
+                            
+                            // Save the item
+                            viewModel.save(item: newItem)
+                            newItemPresented = false
+                            onItemSaved?()
+                        } else {
+                            viewModel.showAlert = true
+                        }
                     }
+                    .padding()
                 }
-                .padding()
-            }
-            .alert(isPresented: $viewModel.showAlert) {
-                Alert(title: Text("Error"),
-                      message: Text("Please fill in item and amount correctly"))
+                .alert(isPresented: $viewModel.showAlert) {
+                    Alert(title: Text("Error"),
+                          message: Text("Please fill in all fields correctly."))
+                }
             }
         }
     }
 }
+

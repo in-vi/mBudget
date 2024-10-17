@@ -19,30 +19,18 @@ class newItemViewViewModel: ObservableObject {
 
     init() {}
 
-    func save() {
-        guard canSave else {
-            return
-        }
+    // Updated save method to accept a TodoListItem
+    func save(item: TodoListItem) {
         guard let uId = Auth.auth().currentUser?.uid else {
             return
         }
-
-        let newId = UUID().uuidString
-        let newItem = TodoListItem(
-            id: newId,
-            title: title,
-            date: date.timeIntervalSince1970,
-            createdDate: Date().timeIntervalSince1970,
-            isDone: false,
-            amount: amount
-        )
 
         let db = Firestore.firestore()
         db.collection("users")
             .document(uId)
             .collection("todos")
-            .document(newId)
-            .setData(newItem.asDictionary()) { error in
+            .document(item.id)
+            .setData(item.asDictionary()) { error in
                 if error == nil {
                     self.onItemSaved?() // Notify that an item has been saved
                 }
@@ -50,7 +38,8 @@ class newItemViewViewModel: ObservableObject {
     }
 
     var canSave: Bool {
-        guard !title.trimmingCharacters(in: .whitespaces).isEmpty else {
+        guard !title.trimmingCharacters(in: .whitespaces).isEmpty,
+              !amount.trimmingCharacters(in: .whitespaces).isEmpty else {
             return false
         }
         return true

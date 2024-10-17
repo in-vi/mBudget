@@ -10,64 +10,47 @@ import FirebaseFirestore
 import Foundation
 
 
-class registerViewViewModel: ObservableObject{
+class registerViewViewModel: ObservableObject {
     @Published var username = ""
     @Published var email = ""
     @Published var password = ""
     @Published var errorMessage = ""
-    init () {}
+
+    func register() {
+        guard validateFields() else { return }
+        createUser()
+    }
     
-    func register(){
-        guard validate() else{
-            return
-        }
-        // try register new user
-        Auth.auth().createUser(withEmail: email, password: password){ [weak self]
-            result, error in
-            guard let userId = result?.user.uid else {
+    private func createUser() {
+        Auth.auth().createUser(withEmail: email, password: password) { [weak self] result, error in
+            guard let userId = result?.user.uid, error == nil else {
+                self?.errorMessage = "Error creating user."
                 return
             }
-            
             self?.insertUserRecord(id: userId)
         }
     }
-    
-    private func insertUserRecord(id:String){
-        
-        let newUser = User(id: id,
-                           name: username,
-                           email: email,
-                           joined: Date().timeIntervalSince1970)
-        
-        let db = Firestore.firestore()
-        
-        db.collection("users") // create a collection in firebase as users
-            .document(id)
-            .setData(newUser.asDictionary())
-        
+
+    private func insertUserRecord(id: String) {
+        let newUser = User(id: id, name: username, email: email, joined: Date().timeIntervalSince1970)
+        Firestore.firestore().collection("users").document(id).setData(newUser.asDictionary())
     }
-    
-    private func validate() -> Bool{
+
+    private func validateFields() -> Bool {
         errorMessage = ""
-        
-        guard !username.trimmingCharacters(in: .whitespaces).isEmpty,
-              !email.trimmingCharacters(in: .whitespaces).isEmpty,
-              !password.trimmingCharacters(in: .whitespaces).isEmpty else{
+        if username.isEmpty || email.isEmpty || password.isEmpty {
             errorMessage = "Please fill in all fields"
             return false
         }
-        
-        guard email.contains("@") && email.contains(".") else{
-            errorMessage = "Enter valid eMail."
+        if !email.contains("@") || !email.contains(".") {
+            errorMessage = "Enter valid email."
             return false
         }
-        
-        guard password.count >= 6 else{
-            errorMessage = "weak password"
+        if password.count < 6 {
+            errorMessage = "Weak password."
             return false
         }
         return true
-        
     }
-    
 }
+
