@@ -10,12 +10,9 @@ import SwiftUI
 
 struct ListView: View {
     @StateObject var viewModel: ListViewViewModel
-    @FirestoreQuery var items: [TodoListItem]
     @State private var selectedMonth: Date = Date()
-    @State private var isActualsViewPresented: Bool = false // State variable for ActualsView
 
     init(userId: String) {
-        self._items = FirestoreQuery(collectionPath: "users/\(userId)/todos")
         self._viewModel = StateObject(wrappedValue: ListViewViewModel(userId: userId))
     }
 
@@ -27,18 +24,20 @@ struct ListView: View {
         if let newMonth = Calendar.current.date(byAdding: .month, value: months, to: selectedMonth) {
             selectedMonth = newMonth
             viewModel.fetchItems(for: selectedMonth)
+            viewModel.fetchProjectedValue(for: selectedMonth) // Fetch projected value for new month
         }
     }
 
     var body: some View {
         NavigationView {
             VStack {
-                ActualsView(projectedValue: viewModel.projectedValue, actualValue: viewModel.actualValue) // Pass values
-                    .transition(.slide) // Optional for nice transition
-                    .padding()
+                ActualsView(projectedValue: viewModel.projectedValue, actualValue: viewModel.actualValue) { value in
+                    viewModel.saveProjectedValue(value, for: selectedMonth) // Save projected value
+                }
+                .padding()
+
                 monthSelectionView
                 todoListView
-                
             }
             .navigationTitle("mBudget")
             .toolbar {
@@ -53,24 +52,21 @@ struct ListView: View {
     }
 
     private var monthSelectionView: some View {
-        VStack{
-           
+        VStack {
             HStack {
                 Button(action: { updateMonth(byAddingMonths: -1) }) {
                     Image(systemName: "chevron.left")
                 }
-                
+
                 Text(formattedMonth)
                     .font(.title2)
                     .bold()
                     .padding(.horizontal)
-                    
+
                 Button(action: { updateMonth(byAddingMonths: 1) }) {
                     Image(systemName: "chevron.right")
                 }
-                
             }
-            
         }
         .padding(.top)
     }
@@ -99,6 +95,7 @@ struct ListView: View {
     }
 }
 
+// Preview Provider
 #Preview {
     ListView(userId: "2sWOdN7nlbasXo8wt9jBUT6xZp82")
 }

@@ -8,12 +8,15 @@
 import SwiftUI
 
 struct ActualsView: View {
+    @State private var isInputPresented = false
+    @State private var userProjectedValue: String = ""
+
     var projectedValue: Double
     var actualValue: Double
+    var saveProjectedValue: (Double) -> Void
 
     var body: some View {
-        VStack(spacing: 20) { // Spacing between items for clarity
-            // Actual Value
+        VStack(spacing: 20) {
             HStack {
                 Text("Actuals:")
                     .bold()
@@ -24,7 +27,6 @@ struct ActualsView: View {
             }
             .padding(.horizontal)
 
-            // Projected Value
             HStack {
                 Text("Projected:")
                     .bold()
@@ -34,12 +36,14 @@ struct ActualsView: View {
                     .foregroundColor(.blue)
             }
             .padding(.horizontal)
+            .onTapGesture {
+                userProjectedValue = "\(projectedValue)"
+                isInputPresented = true
+            }
 
-            // Divider line between Projected and Difference
             Divider()
                 .padding(.horizontal)
 
-            // Difference Value
             HStack {
                 Text("Difference:")
                     .bold()
@@ -50,17 +54,23 @@ struct ActualsView: View {
             }
             .padding(.horizontal)
         }
-        .padding() // Padding around the entire view
-        .background(Color.white) // Set background color
-        .cornerRadius(15) // Rounded corners
-        .shadow(radius: 10) // Shadow for depth
+        .padding()
+        .background(Color.white)
+        .cornerRadius(15)
+        .shadow(radius: 10)
+        .sheet(isPresented: $isInputPresented) {
+            ProjectedValueInputView(isPresented: $isInputPresented, projectedValue: $userProjectedValue) { value in
+                saveProjectedValue(value) // Save projected value
+            }
+        }
     }
 }
+
 
 // Preview Provider
 struct ActualsView_Previews: PreviewProvider {
     static var previews: some View {
-        ActualsView(projectedValue: 150000.00, actualValue: 175000.00) // Example values for preview
+        ActualsView(projectedValue: 150000.00, actualValue: 175000.00, saveProjectedValue: { _ in })
             .previewLayout(.sizeThatFits)
             .padding()
     }
